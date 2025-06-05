@@ -76,6 +76,11 @@ public class WiseSayingFileRepository {
         return createPage(filtered, pageable);
     }
 
+    public Page<WiseSaying> findForListByAuthorContaining(String keyword, Pageable pageable) {
+        List<WiseSaying> filtered = findByAuthorContaining(keyword);
+        return createPage(filtered, pageable);
+    }
+
     private Page<WiseSaying> createPage(List<WiseSaying> wiseSayings, Pageable pageable) {
         int totalCount = wiseSayings.size();
 
@@ -106,6 +111,13 @@ public class WiseSayingFileRepository {
                 .toList();
     }
 
+    private List<WiseSaying> findByAuthorContaining(String keyword) {
+        return loadAllWiseSayings()
+                .filter(w -> w.getAuthor().contains(keyword))
+                .sorted(Comparator.comparingInt(WiseSaying::getId).reversed())
+                .toList();
+    }
+
     private Stream<WiseSaying> loadAllWiseSayings() {
         return Util.file.walkRegularFiles(
                         getTableDirPath(),
@@ -114,9 +126,5 @@ public class WiseSayingFileRepository {
                 .map(path -> Util.file.get(path.toString(), ""))
                 .map(Util.json::toMap)
                 .map(WiseSaying::new);
-    }
-
-    public Page<WiseSaying> findForListByAuthorContaining(String keyword, Pageable pageable) {
-        return null;
     }
 }
