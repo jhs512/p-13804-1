@@ -43,7 +43,11 @@ public interface WiseSayingRepository {
         return filePath;
     }
 
+    default String getTableDirPath() {
+        return AppConfig.getMode() + "Db/wiseSaying";
+    }
+
     default String getArchiveFilePath() {
-        return AppConfig.getMode() + "Db/wiseSaying/data.json";
+        return getTableDirPath() + "/data.json";
     }
 }

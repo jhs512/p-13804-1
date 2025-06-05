@@ -1,7 +1,6 @@
 package com.back.domain.wiseSaying.repository;
 
 import com.back.domain.wiseSaying.entity.WiseSaying;
-import com.back.global.app.AppConfig;
 import com.back.standard.dto.Page;
 import com.back.standard.dto.Pageable;
 import com.back.standard.util.Util;
@@ -15,10 +14,6 @@ import java.util.stream.Stream;
 public class WiseSayingFileRepository implements WiseSayingRepository {
     public String getEntityFilePath(WiseSaying wiseSaying) {
         return getEntityFilePath(wiseSaying.getId());
-    }
-
-    public String getTableDirPath() {
-        return AppConfig.getMode() + "Db/wiseSaying";
     }
 
     public String getEntityFilePath(int id) {
