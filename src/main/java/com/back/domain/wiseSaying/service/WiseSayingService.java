@@ -6,6 +6,8 @@ import com.back.domain.wiseSaying.repository.WiseSayingRepository;
 import com.back.standard.dto.Page;
 import com.back.standard.dto.Pageable;
 
+import java.util.Optional;
+
 public class WiseSayingService {
     private final WiseSayingRepository wiseSayingRepository;
 
@@ -27,21 +29,22 @@ public class WiseSayingService {
         return switch (keywordType) {
             case "content" -> wiseSayingRepository.findForListByContentContaining(keyword, pageable);
             case "author" -> wiseSayingRepository.findForListByAuthorContaining(keyword, pageable);
-            default -> wiseSayingRepository.findForListByContentContainingOrAuthorContaining(keyword, keyword, pageable);
+            default ->
+                    wiseSayingRepository.findForListByContentContainingOrAuthorContaining(keyword, keyword, pageable);
         };
     }
 
     public boolean delete(int id) {
-        WiseSaying wiseSaying = wiseSayingRepository.findById(id);
+        Optional<WiseSaying> opWiseSaying = wiseSayingRepository.findById(id);
 
-        if (wiseSaying == null) return false;
+        if (opWiseSaying.isEmpty()) return false;
 
-        wiseSayingRepository.delete(wiseSaying);
+        wiseSayingRepository.delete(opWiseSaying.get());
 
         return true;
     }
 
-    public WiseSaying findById(int id) {
+    public Optional<WiseSaying> findById(int id) {
         return wiseSayingRepository.findById(id);
     }
 
