@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class WiseSayingFileRepository {
     public String getEntityFilePath(WiseSaying wiseSaying) {
@@ -67,27 +68,18 @@ public class WiseSayingFileRepository {
 
     public Page<WiseSaying> findForList(Pageable pageable) {
         List<WiseSaying> filtered = findAll();
-        int totalCount = filtered.size();
-
-        List<WiseSaying> content = filtered
-                .stream()
-                .skip(pageable.getSkipCount())
-                .limit(pageable.getPageSize())
-                .toList();
-
-        return new Page<>(
-                totalCount,
-                pageable.getPageNo(),
-                pageable.getPageSize(),
-                content
-        );
+        return createPage(filtered, pageable);
     }
 
     public Page<WiseSaying> findForListByContentContaining(String keyword, Pageable pageable) {
         List<WiseSaying> filtered = findByContentContaining(keyword);
-        int totalCount = filtered.size();
+        return createPage(filtered, pageable);
+    }
 
-        List<WiseSaying> content = filtered
+    private Page<WiseSaying> createPage(List<WiseSaying> wiseSayings, Pageable pageable) {
+        int totalCount = wiseSayings.size();
+
+        List<WiseSaying> content = wiseSayings
                 .stream()
                 .skip(pageable.getSkipCount())
                 .limit(pageable.getPageSize())
@@ -102,27 +94,25 @@ public class WiseSayingFileRepository {
     }
 
     private List<WiseSaying> findAll() {
-        return Util.file.walkRegularFiles(
-                        getTableDirPath(),
-                        "\\d+\\.json"
-                )
-                .map(path -> Util.file.get(path.toString(), ""))
-                .map(Util.json::toMap)
-                .map(WiseSaying::new)
-                .sorted(Comparator.comparingInt(WiseSaying::getId).reversed()) // id 순 역순정렬
+        return loadAllWiseSayings()
+                .sorted(Comparator.comparingInt(WiseSaying::getId).reversed())
                 .toList();
     }
 
     private List<WiseSaying> findByContentContaining(String keyword) {
+        return loadAllWiseSayings()
+                .filter(w -> w.getContent().contains(keyword))
+                .sorted(Comparator.comparingInt(WiseSaying::getId).reversed())
+                .toList();
+    }
+
+    private Stream<WiseSaying> loadAllWiseSayings() {
         return Util.file.walkRegularFiles(
                         getTableDirPath(),
                         "\\d+\\.json"
                 )
                 .map(path -> Util.file.get(path.toString(), ""))
                 .map(Util.json::toMap)
-                .map(WiseSaying::new)
-                .filter(w -> w.getContent().contains(keyword))
-                .sorted(Comparator.comparingInt(WiseSaying::getId).reversed()) // id 순 역순정렬
-                .toList();
+                .map(WiseSaying::new);
     }
 }
